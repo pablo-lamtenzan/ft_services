@@ -77,3 +77,61 @@ minikube start --vm-driver=virtualbox
 
 server_ip=`minikube ip`
 sed_list="srcs/containers/mysql/wp.sql srcs/containers/wordpress/wp-config.php srcs/yaml/telegraf.yaml"
+
+# seting the IP on configs
+for path in $sed_list
+do
+	set_ip $server_ip $path
+done
+
+echo -e "\033[1;32m+>\033[0;33m Updating grafana db ..."
+echo "UPDATE data_source SET url = 'http://$server_ip:8086'" | sqlite3 srcs/containers/grafana/grafana.db
+
+echo -e "\033[1;32m+>\033[0;33m Opening ports ..."
+minikube ssh "sudo -u root awk 'NR==14{print \"    - --service-node-port-range=1-35000\"}7' /etc/kubernetes/manifests/kube-apiserver.yaml >> tmp && sudo -u root rm /etc/kubernetes/manifests/kube-apiserver.yaml && sudo -u root mv tmp /etc/kubernetes/manifests/kube-apiserver.yaml"
+
+echo -e "\033[1;32m+>\033[0;33m Linking docker local image to minikube ..."
+eval $(minikube docker-env)
+
+sed -i.bak 's/MINIKUBE_IP/'"$server_ip"'/g' srcs/containers/ftps/setup.sh
+
+# building a container for each service
+names="nginx influxdb grafana mysql phpmyadmin wordpress telegraf ftps"
+
+for name in $names
+do
+	build_container $name
+	up_service $name
+done
+minikube addons enable ingress
+echo -e "\033[1;33m+>\033[0;33m IP : $server_ip "
+sleep 1
+
+# config defualt config files uptading the ip
+sed -i.bak 's/http:\/\/'"$server_ip"'/http:\/\/IP/g' srcs/containers/mysql/wp.sql
+sleep 1
+sed -i.bak 's/http:\/\/'"$server_ip"'/http:\/\/IP/g' srcs/containers/wordpress/wp-config.php
+sleep 1
+sed -i.bak 's/http:\/\/'"$server_ip"'/http:\/\/IP/g' srcs/yaml/telegraf.yaml
+sleep 1
+sed -i.bak 's/'"$server_ip"'/MINIKUBE_IP/g' srcs/containers/ftps/setup.sh
+sleep 1
+
+echo -e "\033[1;32m+>\033[0;33m Waiting for the site ..."
+until $(curl --output /dev/null --silent --head --fail http://$server_ip/); do
+	echo -n "."
+	sleep 2
+done;
+
+echo -e " Opening website ... "
+open http://$server_ip
+
+### Dashboard
+# minikube dashboard
+
+###
+# ssh admin@$(minikube ip) -p 1234
+
+### Crash Container
+# kubectl exec -it $(kubectl get pods | grep mysql | cut -d" " -f1) -- /bin/sh -c "ps"  
+# kubectl exec -it $(kubectl get pods | grep mysql | cut -d" " -f1) -- /bin/sh -c "kill number" 
