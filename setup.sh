@@ -26,51 +26,56 @@ up_service()
 
 clear
 
+
+# installing brew and docker for macOS
+
 # Brew istalled in host ?
 # no -> install it
 # yes -> check for update
-which -s brew
-if [[ $? != 0 ]] ; then
-	echo -e "\033[1;31m+>\033[0;33m Intalling brew... "
-	rm -rf $HOME/.brew && git clone --depth=1 https://github.com/Homebrew/brew $HOME/.brew && export PATH=$HOME/.brew/bin:$PATH && brew update && echo "export PATH=$HOME/.brew/bin:$PATH" >> ~/.zshrc &> /dev/null
-else
-	echo -e "\033[1;32m+>\033[0;33m Updating brew... "
-	brew update &> /dev/null
-fi
+#which -s brew
+#if [[ $? != 0 ]] ; then
+#	echo -e "\033[1;31m+>\033[0;33m Intalling brew... "
+#	rm -rf $HOME/.brew && git clone --depth=1 https://github.com/Homebrew/brew $HOME/.brew && export PATH=$HOME/.brew/bin:$PATH && brew update && echo "export PATH=$HOME/.brew/bin:$PATH" >> ~/.zshrc &> /dev/null
+#else
+#	echo -e "\033[1;32m+>\033[0;33m Updating brew... "
+#	brew update &> /dev/null
+#fi
 
-echo "N" | bash srcs/init_docker.sh
-echo -e "\033[1;33m+>\033[0;33m Waiting for docker ... "
-until docker &> /dev/null
-do
-	&> /dev/null
-done
+#echo "N" | bash srcs/init_docker.sh
+#echo -e "\033[1;33m+>\033[0;33m Waiting for docker ... "
+#until docker &> /dev/null
+#do
+#	&> /dev/null
+#done
 
 # liking to goinfre (or any folder)
-export MINIKUBE_HOME=/goinfre/$USER/
-rm -rf /goinfre/$USER/.minikube
+# export MINIKUBE_HOME=/goinfre/$USER/
+# rm -rf /goinfre/$USER/.minikube
+
+# installing minikube MacOS
 
 # minikube in host ?
 # n -> install it
 # y -> check for update
-if minikube &> /dev/null
-then
-	echo -e "\033[1;33m+>\033[0;33m checking Minikube for upgrade ... "
-	if brew upgrade minikube &> /dev/null
-	then
-		echo -e "\033[1;32m+>\033[0;33m Minikube updated "
-	else
-		echo -e "\033[1;31m+>\033[0;33m Error: minikube can't be uptated"
-		exit 1
-	fi
-else
-	echo -e "\033[1;31m+>\033[0;33m Installing minikube ..."
-	if brew install minikube &> /dev/null
-	then
-		echo -e "\033[1;32m+>\033[0;33m Minikube installed"
-	else
-		echo -e "\033[1;31m+>\033[0;33m Error: minikube can't be installed"
-	fi
-fi
+#if minikube &> /dev/null
+#then
+#	echo -e "\033[1;33m+>\033[0;33m checking Minikube for upgrade ... "
+#	if brew upgrade minikube &> /dev/null
+#	then
+#		echo -e "\033[1;32m+>\033[0;33m Minikube updated "
+#	else
+#		echo -e "\033[1;31m+>\033[0;33m Error: minikube can't be uptated"
+#		exit 1
+#	fi
+#else
+#	echo -e "\033[1;31m+>\033[0;33m Installing minikube ..."
+#	if brew install minikube &> /dev/null
+#	then
+#		echo -e "\033[1;32m+>\033[0;33m Minikube installed"
+#	else
+#		echo -e "\033[1;31m+>\033[0;33m Error: minikube can't be installed"
+#	fi
+#fi
 
 echo -e "\033[1;32m+>\033[0;33m Starting minikube (could take a few minutes)"
 minikube start --vm-driver=virtualbox
@@ -111,6 +116,7 @@ sleep 1
 sed -i.bak 's/http:\/\/'"$server_ip"'/http:\/\/IP/g' srcs/containers/mysql/wp.sql
 sleep 1
 sed -i.bak 's/http:\/\/'"$server_ip"'/http:\/\/IP/g' srcs/containers/wordpress/wp-config.php
+
 sleep 1
 sed -i.bak 's/http:\/\/'"$server_ip"'/http:\/\/IP/g' srcs/yaml/telegraf.yaml
 sleep 1
