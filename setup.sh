@@ -78,10 +78,7 @@ clear
 #fi
 
 echo -e "\033[1;32m+>\033[0;33m Starting minikube (could take a few minutes)"
-minikube config set vm-driver virtualbox
-minikube delete
-minikube start --bootstrapper=kubeadm --extra-config=apiserver.service-node-port-range=1-30000
-#minikube start --vm-driver=virtualbox
+minikube start --vm-driver=virtualbox
 
 server_ip=`minikube ip`
 sed_list="srcs/containers/mysql/wp.sql srcs/containers/wordpress/wp-config.php srcs/yaml/telegraf.yaml"
