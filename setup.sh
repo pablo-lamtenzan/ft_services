@@ -78,7 +78,7 @@ clear
 #fi
 
 echo -e "\033[1;32m+>\033[0;33m Starting minikube (could take a few minutes)"
-minikube start --vm-driver=virtualbox
+minikube start --vm-driver=docker #virtualbox
 
 server_ip=`minikube ip`
 sed_list="srcs/containers/mysql/wp.sql srcs/containers/wordpress/wp-config.php srcs/yaml/telegraf.yaml"
